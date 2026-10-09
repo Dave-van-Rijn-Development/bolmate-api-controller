@@ -170,8 +170,11 @@ bolmate_database_host=
 bolmate_database_port=
 ```
 
-`bolmate_encryption_iterations` and `bolmate_database_port` must be integers. Settings are
-cached after first load. `config.ini` is gitignored and must never be committed.
+`bolmate_encryption_iterations` and `bolmate_database_port` must be integers. Any other key
+is ignored, so the calling service can keep its own settings in the same file or section.
+They are dropped rather than stored, so they are not readable through this library's
+settings. Settings are cached after first load. `config.ini` is gitignored and must never be
+committed.
 
 ### Where values come from
 
@@ -191,7 +194,8 @@ a `ValueError` is raised. Otherwise the first of these that exists is used:
 
 1. `[bolmate_api_controller]`
 2. `[main]`
-3. `[DEFAULT]`
+3. `[app:main]`
+4. `[DEFAULT]`
 
 Keys in `[DEFAULT]` are inherited by every other section, so shared values can live there
 and per-environment sections only need to list what differs.
@@ -222,7 +226,7 @@ override_config(config={
 
 | Function | Effect |
 | --- | --- |
-| `override_config(config=...)` | Use this dict as the complete configuration. It is validated immediately: a missing key or a value of the wrong type raises `pydantic.ValidationError` here rather than on the first bol call. |
+| `override_config(config=...)` | Use this dict as the complete configuration. It is validated immediately: a missing key or a value of the wrong type raises `pydantic.ValidationError` here rather than on the first bol call. Other keys are ignored. |
 | `clear_config_override()` | Drop the dict and go back to the environment and config file. |
 | `override_settings_variables(config_file_path=..., config_section=...)` | Change which file and section are read. Both arguments are optional: one you leave out keeps its current value, and `None` resets it to the default. A path set here must exist: if it does not, the next settings load raises `FileNotFoundError`. |
 | `clear_override_settings_variables()` | Reset both the file and the section to the default. |

@@ -4,12 +4,10 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class Settings(BaseModel):
-    model_config = ConfigDict(extra='allow')
-
     # Encryption
     bolmate_encrypt_secret: str
     bolmate_encryption_value: str
