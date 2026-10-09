@@ -36,7 +36,7 @@ _config_section_override: str | None = None
 
 class ConfigReader:
     # Sections to try to parse
-    DEFAULT_SECTIONS = ['bolmate_api_controller', 'main', 'DEFAULT']
+    DEFAULT_SECTIONS = ['bolmate_api_controller', 'main', 'app:main', 'DEFAULT']
 
     def __init__(self, config_file_path: str | Path | None = None, section: str | None = None):
         self._explicit_path = config_file_path is not None
