@@ -2,3 +2,5 @@ from bolmate_api_controller.controllers.async_controller import get_api_key_asyn
 from bolmate_api_controller.controllers.sync_controller import get_api_key_sync
 from bolmate_api_controller.constants import BEARER_REFRESH_MARGIN
 from bolmate_api_controller.types import *
+from bolmate_api_controller.settings import override_config, clear_config_override, override_settings_variables, \
+    clear_override_settings_variables, Settings

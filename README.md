@@ -144,10 +144,11 @@ this library provides is per-key serialisation of refreshes — nothing more.
 
 ## Configuration
 
-Settings are read from a `config.ini` in the **working directory of the calling service**,
-via `pydantic-settings`. All keys are required:
+By default, settings are read from a `config.ini` in the **working directory of the calling
+service**, with environment variables taking precedence. All keys are required:
 
 ```ini
+[bolmate_api_controller]
 # Encryption
 bolmate_encrypt_secret=
 bolmate_encryption_value=
@@ -169,8 +170,66 @@ bolmate_database_host=
 bolmate_database_port=
 ```
 
-Settings are cached after first load. `config.ini` is gitignored and must never be
-committed.
+`bolmate_encryption_iterations` and `bolmate_database_port` must be integers. Settings are
+cached after first load. `config.ini` is gitignored and must never be committed.
+
+### Where values come from
+
+1. **A dict passed to `override_config`**, if one is set. It is the complete configuration:
+   the file and environment variables are not read at all.
+2. Otherwise, **environment variables**, matched to the key names case-insensitively
+   (`BOLMATE_DATABASE_HOST` and `bolmate_database_host` both work). They override the file
+   and fill in keys the file leaves out.
+3. **The config file.** A missing default `config.ini` is not an error, so a service can be
+   configured through environment variables alone.
+
+### The config file
+
+The file is parsed with `configparser`. If a section was set with
+`override_settings_variables(config_section=...)`, that section is used and must exist, or
+a `ValueError` is raised. Otherwise the first of these that exists is used:
+
+1. `[bolmate_api_controller]`
+2. `[main]`
+3. `[DEFAULT]`
+
+Keys in `[DEFAULT]` are inherited by every other section, so shared values can live there
+and per-environment sections only need to list what differs.
+
+A file without any section header is read as if it were entirely `[DEFAULT]`, so files in
+the older `key=value` format keep working. They are still parsed as INI, not dotenv:
+**quotes and inline comments are kept as part of the value**. `password="x"` yields `"x"`
+including the quotes, and `host=db # primary` yields `db # primary`. Comments must be on a
+line of their own.
+
+`%` has no special meaning; values are taken literally.
+
+### Overriding the configuration
+
+```python
+from bolmate_api_controller import override_config, override_settings_variables
+
+# Read a different file and/or section
+override_settings_variables(config_file_path='/etc/bolmate/config.ini', config_section='production')
+
+# Or supply every value directly, bypassing files and environment variables
+override_config(config={
+    'bolmate_encrypt_secret': ...,
+    'bolmate_encryption_value': ...,
+    # ...every key from the list above
+})
+```
+
+| Function | Effect |
+| --- | --- |
+| `override_config(config=...)` | Use this dict as the complete configuration. It is validated immediately: a missing key or a value of the wrong type raises `pydantic.ValidationError` here rather than on the first bol call. |
+| `clear_config_override()` | Drop the dict and go back to the environment and config file. |
+| `override_settings_variables(config_file_path=..., config_section=...)` | Change which file and section are read. Both arguments are optional: one you leave out keeps its current value, and `None` resets it to the default. A path set here must exist: if it does not, the next settings load raises `FileNotFoundError`. |
+| `clear_override_settings_variables()` | Reset both the file and the section to the default. |
+
+All four clear the settings cache, so they take effect on the next call into the library,
+even after settings have already been loaded. They change module-wide state for the whole
+process; call them once at start-up, before the first `get_api_key_*` call.
 
 ### Database
 

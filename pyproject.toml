@@ -1,6 +1,6 @@
 [project]
 name = "bolmate_api_controller"
-version = "1.0.0"
+version = "1.0.1"
 description = "Bolmate controller responsible for storing and refreshing API tokens"
 readme = "README.md"
 requires-python = ">=3.13"
