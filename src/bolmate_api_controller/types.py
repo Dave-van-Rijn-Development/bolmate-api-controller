@@ -36,6 +36,7 @@ class APIKey:
     refresh_token_expires_at: PyDateTime | None
     oauth_type: OAuthType
     use_oauth: bool
+    status: Literal['importing', 'active', 'error', 'inactive']
 
     # Legacy keys
     key: str | None

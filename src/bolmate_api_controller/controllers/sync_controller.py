@@ -36,6 +36,14 @@ def get_api_key_sync(*, api_key_id: ID) -> Result:
             )
 
         api_key = APIKey.from_dict(data=key_dict)
+        if api_key.status not in ('active', 'importing'):
+            return Result(
+                api_key=api_key,
+                success=False,
+                error=ErrorCode.API_KEY_DEACTIVATED,
+                retryable=False
+            )
+
         if not api_key.bearer_is_expired:
             return Result(
                 api_key=api_key,
