@@ -36,7 +36,7 @@ class APIKey:
     refresh_token_expires_at: PyDateTime | None
     oauth_type: OAuthType
     use_oauth: bool
-    status: Literal['importing', 'active', 'error', 'inactive']
+    status: str  # For possible values see the ApiKey model in Bolmate
 
     # Legacy keys
     key: str | None
@@ -59,6 +59,7 @@ class APIKey:
             use_oauth=cast(bool, data.get('use_oauth')),
             key=enc_data.decrypt(encrypted_text=key) if key else None,
             secret=enc_data.decrypt(encrypted_text=secret) if secret else None,
+            status=data.get('status'),
         )
 
     @property
